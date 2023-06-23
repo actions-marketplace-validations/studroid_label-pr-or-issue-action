@@ -1,5 +1,5 @@
-name: 'Auto Approve'
-description: 'Automatically approve pull requests'
+name: 'Label PR or Issue'
+description: 'Add a label to a PR or an issue by its number'
 branding:
   icon: 'check-circle'
   color: 'green'
@@ -8,11 +8,11 @@ inputs:
     default: ${{ github.token }}
     description: 'The GITHUB_TOKEN secret'
     required: false
+  label:
+    description: 'The name of the label to add to a pull request.'
+    required: true
   pull-request-number:
     description: '(optional) The ID of a pull request to auto-approve. By default, this action tries to use the pull_request event payload.'
-    required: false
-  review-message:
-    description: '(optional) The message of the pull request review.'
     required: false
 runs:
   using: 'node16'

@@ -1,40 +1,35 @@
 {
-  "name": "auto-approve-action",
-  "version": "3.1.0",
-  "description": "Automatically approve pull requests",
+  "name": "label-pr-or-issue-action",
+  "version": "1.0.0",
+  "description": "Add a label to a PR or an issue by its number",
   "main": "dist/main.ts",
   "scripts": {
     "build": "ncc build src/main.ts",
     "format": "prettier --write **/*.ts",
-    "format-check": "prettier --check **/*.ts",
-    "test": "jest",
-    "test:watch": "jest --watchAll"
+    "format-check": "prettier --check **/*.ts"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hmarr/auto-approve-action.git"
+    "url": "git+https://github.com/studroid/label-pr-or-issue-action.git"
   },
   "keywords": [
     "actions"
   ],
-  "author": "hmarr",
+  "author": "studroid",
+  "contributors": ["mintplo"],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/hmarr/auto-approve-action/issues"
+    "url": "https://github.com/studroid/label-pr-or-issue-action/issues"
   },
-  "homepage": "https://github.com/hmarr/auto-approve-action#readme",
+  "homepage": "https://github.com/studroid/label-pr-or-issue-action#readme",
   "dependencies": {
     "@actions/core": "^1.9.1",
     "@actions/github": "^5.0.0"
   },
   "devDependencies": {
-    "@types/jest": "^27.4.1",
     "@types/node": "^17.0.23",
     "@vercel/ncc": "^0.33.3",
-    "jest": "^27.5.1",
-    "nock": "^13.2.4",
     "prettier": "^2.6.1",
-    "ts-jest": "^27.1.4",
     "typescript": "^4.6.3"
   }
 }
