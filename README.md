@@ -27,7 +27,7 @@ name: Label a Pull Request or an Issue
 on:
   workflow_dispatch:
     inputs: 
-      pullRequestNumber:
+      prOrIssueNumber:
         description: Pull request or issue number to label
         required: true
 
@@ -39,7 +39,7 @@ jobs:
     steps:
     - uses: studroid/label-pr-or-issue-action@v1
       with:
-        pull-request-number: ${{ github.event.inputs.pullRequestNumber }}
+        pr-or-issue-number: ${{ github.event.inputs.prOrIssueNumber }}
         label: "my-label"
 ```
 
@@ -61,7 +61,7 @@ jobs:
       - uses: studroid/label-pr-or-issue-action@v1
         with:
           github-token: ${{ secrets.SOME_USERS_PAT }}
-          pull-request-number: ${{ github.event.inputs.pullRequestNumber }}
+          pr-or-issue-number: ${{ github.event.inputs.prOrIssueNumber }}
           label: "my-label"
 ```
 

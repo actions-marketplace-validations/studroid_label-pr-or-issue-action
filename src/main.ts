@@ -1,44 +1,45 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
-import { approve } from "./approve";
+import {addLabel} from "./addLabel";
 
 export async function run() {
-  try {
-    const token = core.getInput("github-token");
-    const reviewMessage = core.getInput("review-message");
-    await approve(
-      token,
-      github.context,
-      prNumber(),
-      reviewMessage || undefined
-    );
-  } catch (error) {
-    if (error instanceof Error) {
-      core.setFailed(error.message);
-    } else {
-      core.setFailed("Unknown error");
+    try {
+        const token = core.getInput("github-token");
+        const label = core.getInput("label");
+        const issueInfo = await addLabel(
+            token,
+            github.context,
+            prOrIssueNumber(),
+            label
+        );
+        core.setOutput('pr-or-issue-title', issueInfo);
+    } catch (error) {
+        if (error instanceof Error) {
+            core.setFailed(error.message);
+        } else {
+            core.setFailed("Unknown error");
+        }
     }
-  }
 }
 
-function prNumber(): number {
-  if (core.getInput("pull-request-number") !== "") {
-    const prNumber = parseInt(core.getInput("pull-request-number"), 10);
-    if (Number.isNaN(prNumber)) {
-      throw new Error("Invalid `pull-request-number` value");
+function prOrIssueNumber(): number {
+    if (core.getInput("pr-or-issue-number") !== "") {
+        const prOrIssueNumber = parseInt(core.getInput("pr-or-issue-number"), 10);
+        if (Number.isNaN(prOrIssueNumber)) {
+            throw new Error("Invalid `pr-or-issue-number` value");
+        }
+        return prOrIssueNumber;
     }
-    return prNumber;
-  }
 
-  if (!github.context.payload.pull_request) {
-    throw new Error(
-      "This action must be run using a `pull_request` event or " +
-        "have an explicit `pull-request-number` provided"
-    );
-  }
-  return github.context.payload.pull_request.number;
+    if (!github.context.payload.pull_request) {
+        throw new Error(
+            "This action must be run using a `pull_request` event or " +
+            "have an explicit `pr-or-issue-number` provided"
+        );
+    }
+    return github.context.payload.pull_request.number;
 }
 
 if (require.main === module) {
-  run();
+    run();
 }
