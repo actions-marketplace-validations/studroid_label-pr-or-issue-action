@@ -3,13 +3,14 @@ import * as github from "@actions/github";
 import { RequestError } from "@octokit/request-error";
 import { Context } from "@actions/github/lib/context";
 import { GitHub } from "@actions/github/lib/utils";
+import {IssueInfo} from "./types";
 
 export async function addLabel(
   token: string,
   context: Context,
   prOrIssueNumber: number,
   label: string
-) {
+): Promise<IssueInfo | null> {
   const client = github.getOctokit(token);
 
   try {
@@ -32,7 +33,10 @@ export async function addLabel(
         labels: [label]
     });
 
-    return issue.title;
+    return {
+        title: issue.title,
+        html_url: issue.html_url
+    };
   } catch (error) {
     if (error instanceof RequestError) {
       switch (error.status) {
@@ -52,7 +56,7 @@ export async function addLabel(
         default:
           core.setFailed(`Error (code ${error.status}): ${error.message}`);
       }
-      return;
+      return null;
     }
 
     if (error instanceof Error) {
@@ -60,7 +64,7 @@ export async function addLabel(
     } else {
       core.setFailed("Unknown error");
     }
-    return;
+    return null;
   }
 }
 

@@ -9509,7 +9509,10 @@ function addLabel(token, context, prOrIssueNumber, label) {
                 issue_number: prOrIssueNumber,
                 labels: [label]
             });
-            return issue.title;
+            return {
+                title: issue.title,
+                html_url: issue.html_url
+            };
         }
         catch (error) {
             if (error instanceof request_error_1.RequestError) {
@@ -9526,7 +9529,7 @@ function addLabel(token, context, prOrIssueNumber, label) {
                     default:
                         core.setFailed(`Error (code ${error.status}): ${error.message}`);
                 }
-                return;
+                return null;
             }
             if (error instanceof Error) {
                 core.setFailed(error);
@@ -9534,7 +9537,7 @@ function addLabel(token, context, prOrIssueNumber, label) {
             else {
                 core.setFailed("Unknown error");
             }
-            return;
+            return null;
         }
     });
 }
@@ -9609,7 +9612,10 @@ function run() {
             const token = core.getInput("github-token");
             const label = core.getInput("label");
             const issueInfo = yield (0, addLabel_1.addLabel)(token, github.context, prOrIssueNumber(), label);
-            core.setOutput('pr_or_issue_title', issueInfo);
+            if (issueInfo) {
+                core.setOutput('pr_or_issue_title', issueInfo.title);
+                core.setOutput('pr_or_issue_url', issueInfo.html_url);
+            }
         }
         catch (error) {
             if (error instanceof Error) {

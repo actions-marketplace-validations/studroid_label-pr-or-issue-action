@@ -6,13 +6,18 @@ export async function run() {
     try {
         const token = core.getInput("github-token");
         const label = core.getInput("label");
+
         const issueInfo = await addLabel(
             token,
             github.context,
             prOrIssueNumber(),
             label
         );
-        core.setOutput('pr_or_issue_title', issueInfo);
+
+        if(issueInfo) {
+            core.setOutput('pr_or_issue_title', issueInfo.title);
+            core.setOutput('pr_or_issue_url', issueInfo.html_url);
+        }
     } catch (error) {
         if (error instanceof Error) {
             core.setFailed(error.message);
