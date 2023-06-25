@@ -9501,7 +9501,14 @@ function addLabel(token, context, prOrIssueNumber, label) {
                 client.rest.issues.get({ owner, repo, issue_number: prOrIssueNumber }),
             ]);
             core.info(`Current user is ${login}`);
-            core.info(`Issue title is ${issue.title}`);
+            core.info(`Issue title is "${issue.title}"`);
+            core.info(`Adding label "${label}" to issue #${prOrIssueNumber}`);
+            yield client.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: prOrIssueNumber,
+                labels: [label]
+            });
             return issue.title;
         }
         catch (error) {

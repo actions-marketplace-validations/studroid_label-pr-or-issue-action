@@ -22,8 +22,15 @@ export async function addLabel(
     ]);
 
     core.info(`Current user is ${login}`);
+    core.info(`Issue title is "${issue.title}"`);
 
-    core.info(`Issue title is ${issue.title}`);
+    core.info(`Adding label "${label}" to issue #${prOrIssueNumber}`);
+    await client.rest.issues.addLabels({
+        owner,
+        repo,
+        issue_number: prOrIssueNumber,
+        labels: [label]
+    });
 
     return issue.title;
   } catch (error) {
