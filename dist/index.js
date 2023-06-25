@@ -1806,7 +1806,6 @@ class Context {
 exports.Context = Context;
 //# sourceMappingURL=context.js.map
 
-
 /***/ }),
 
 /***/ 5438:
@@ -10028,7 +10027,7 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
-/***/ 6609:
+/***/ 3522:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -10066,55 +10065,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.approve = void 0;
+exports.addLabel = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const request_error_1 = __nccwpck_require__(537);
-function approve(token, context, prNumber, reviewMessage) {
-    var _a, _b;
+function addLabel(token, context, prOrIssueNumber, label) {
     return __awaiter(this, void 0, void 0, function* () {
-        if (!prNumber) {
-            prNumber = (_a = context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.number;
-        }
-        if (!prNumber) {
-            core.setFailed("Event payload missing `pull_request` key, and no `pull-request-number` provided as input." +
-                "Make sure you're triggering this action on the `pull_request` or `pull_request_target` events.");
-            return;
-        }
         const client = github.getOctokit(token);
         try {
             const { owner, repo } = context.repo;
-            core.info(`Fetching user, pull request information, and existing reviews`);
-            const [login, { data: pr }, { data: reviews }] = yield Promise.all([
+            core.info(`Fetching user, issue information`);
+            const [login, { data: issue }] = yield Promise.all([
                 getLoginForToken(client),
-                client.rest.pulls.get({ owner, repo, pull_number: prNumber }),
-                client.rest.pulls.listReviews({ owner, repo, pull_number: prNumber }),
+                client.rest.issues.get({ owner, repo, issue_number: prOrIssueNumber }),
             ]);
             core.info(`Current user is ${login}`);
-            const prHead = pr.head.sha;
-            core.info(`Commit SHA is ${prHead}`);
-            // Only the most recent review for a user counts towards the review state
-            const latestReviewForUser = [...reviews]
-                .reverse()
-                .find(({ user }) => (user === null || user === void 0 ? void 0 : user.login) === login);
-            const alreadyReviewed = (latestReviewForUser === null || latestReviewForUser === void 0 ? void 0 : latestReviewForUser.state) === "APPROVED";
-            // If there's an approved review from a user, but there's an outstanding review request,
-            // we need to create a new review. Review requests mean that existing "APPROVED" reviews
-            // don't count towards the mergeability of the PR.
-            const outstandingReviewRequest = (_b = pr.requested_reviewers) === null || _b === void 0 ? void 0 : _b.some((reviewer) => reviewer.login == login);
-            if (alreadyReviewed && !outstandingReviewRequest) {
-                core.info(`Current user already approved pull request #${prNumber}, nothing to do`);
-                return;
-            }
-            core.info(`Pull request #${prNumber} has not been approved yet, creating approving review`);
-            yield client.rest.pulls.createReview({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prNumber,
-                body: reviewMessage,
-                event: "APPROVE",
-            });
-            core.info(`Approved pull request #${prNumber}`);
+            core.info(`Issue title is ${issue.title}`);
+            return issue.title;
         }
         catch (error) {
             if (error instanceof request_error_1.RequestError) {
@@ -10123,21 +10090,10 @@ function approve(token, context, prNumber, reviewMessage) {
                         core.setFailed(`${error.message}. Please check that the \`github-token\` input ` +
                             "parameter is set correctly.");
                         break;
-                    case 403:
-                        core.setFailed(`${error.message}. In some cases, the GitHub token used for actions triggered ` +
-                            "from `pull_request` events are read-only, which can cause this problem. " +
-                            "Switching to the `pull_request_target` event typically resolves this issue.");
-                        break;
                     case 404:
                         core.setFailed(`${error.message}. This typically means the token you're using doesn't have ` +
                             "access to this repository. Use the built-in `${{ secrets.GITHUB_TOKEN }}` token " +
                             "or review the scopes assigned to your personal access token.");
-                        break;
-                    case 422:
-                        core.setFailed(`${error.message}. This typically happens when you try to approve the pull ` +
-                            "request with the same user account that created the pull request. Try using " +
-                            "the built-in `${{ secrets.GITHUB_TOKEN }}` token, or if you're using a personal " +
-                            "access token, use one that belongs to a dedicated bot account.");
                         break;
                     default:
                         core.setFailed(`Error (code ${error.status}): ${error.message}`);
@@ -10154,7 +10110,7 @@ function approve(token, context, prNumber, reviewMessage) {
         }
     });
 }
-exports.approve = approve;
+exports.addLabel = addLabel;
 function getLoginForToken(client) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -10164,7 +10120,7 @@ function getLoginForToken(client) {
         catch (error) {
             if (error instanceof request_error_1.RequestError) {
                 // If you use the GITHUB_TOKEN provided by GitHub Actions to fetch the current user
-                // you get a 403. For now we'll assume any 403 means this is an Actions token.
+                // you get a 403. For now, we'll assume any 403 means this is an Actions token.
                 if (error.status === 403) {
                     return "github-actions[bot]";
                 }
@@ -10218,13 +10174,14 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
-const approve_1 = __nccwpck_require__(6609);
+const addLabel_1 = __nccwpck_require__(3522);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const token = core.getInput("github-token");
-            const reviewMessage = core.getInput("review-message");
-            yield (0, approve_1.approve)(token, github.context, prNumber(), reviewMessage || undefined);
+            const label = core.getInput("label");
+            const issueInfo = yield (0, addLabel_1.addLabel)(token, github.context, prOrIssueNumber(), label);
+            core.setOutput('pr-or-issue-title', issueInfo);
         }
         catch (error) {
             if (error instanceof Error) {
@@ -10237,17 +10194,17 @@ function run() {
     });
 }
 exports.run = run;
-function prNumber() {
-    if (core.getInput("pull-request-number") !== "") {
-        const prNumber = parseInt(core.getInput("pull-request-number"), 10);
-        if (Number.isNaN(prNumber)) {
-            throw new Error("Invalid `pull-request-number` value");
+function prOrIssueNumber() {
+    if (core.getInput("pr-or-issue-number") !== "") {
+        const prOrIssueNumber = parseInt(core.getInput("pr-or-issue-number"), 10);
+        if (Number.isNaN(prOrIssueNumber)) {
+            throw new Error("Invalid `pr-or-issue-number` value");
         }
-        return prNumber;
+        return prOrIssueNumber;
     }
     if (!github.context.payload.pull_request) {
         throw new Error("This action must be run using a `pull_request` event or " +
-            "have an explicit `pull-request-number` provided");
+            "have an explicit `pr-or-issue-number` provided");
     }
     return github.context.payload.pull_request.number;
 }
