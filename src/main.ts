@@ -12,7 +12,7 @@ export async function run() {
             prOrIssueNumber(),
             label
         );
-        core.setOutput('pr-or-issue-title', issueInfo);
+        core.setOutput('pr_or_issue_title', issueInfo);
     } catch (error) {
         if (error instanceof Error) {
             core.setFailed(error.message);
