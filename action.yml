@@ -9,10 +9,10 @@ inputs:
     description: 'The GITHUB_TOKEN secret'
     required: false
   label:
-    description: 'The name of the label to add to a pull request.'
+    description: 'The name of the label to add to a pull request or an issue.'
     required: true
-  pull-request-number:
-    description: '(optional) The ID of a pull request to auto-approve. By default, this action tries to use the pull_request event payload.'
+  pr-or-issue-number:
+    description: '(optional) The ID of a pull request or an issue to label. By default, this action tries to use the pull_request event payload.'
     required: false
 runs:
   using: 'node16'
